@@ -1,0 +1,7 @@
+.gradle/
+.idea/
+build/
+*.jar
+Test.kt
+*.jar
+!gradle-wrapper.jar
