@@ -7,3 +7,5 @@ de.fayard.refreshVersions.RefreshVersionsSetup.bootstrap(settings)
 
 rootProject.name = 'kasm'
 
+include ':commons'
+
