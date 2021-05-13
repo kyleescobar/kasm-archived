@@ -20,6 +20,8 @@ package org.spectralpowered.kasm
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.FieldNode
+import org.objectweb.asm.tree.MethodNode
 import org.spectralpowered.kasm.commons.propertymixin.mixin
 
 var ClassNode.pool: ClassPool by mixin()
@@ -33,6 +35,14 @@ internal fun ClassNode.init(pool: ClassPool) {
     this.pool = pool
     this.methods.forEach { it.init(this) }
     this.fields.forEach { it.init(this) }
+}
+
+fun ClassNode.findMethod(name: String, desc: String): MethodNode? {
+    return this.methods.firstOrNull { it.name == name && it.desc == desc }
+}
+
+fun ClassNode.findField(name: String, desc: String): FieldNode? {
+    return this.fields.firstOrNull { it.name == name && it.desc == desc }
 }
 
 fun ClassNode.toByteCode(): ByteArray {
