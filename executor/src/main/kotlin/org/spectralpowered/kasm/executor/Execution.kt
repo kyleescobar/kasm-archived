@@ -25,7 +25,6 @@ import org.objectweb.asm.tree.MethodNode
 import org.spectralpowered.kasm.ClassPool
 import org.spectralpowered.kasm.owner
 import org.spectralpowered.kasm.toByteCode
-import java.util.function.BiPredicate
 
 class Execution(val pool: ClassPool, private val optionsBlock: (Options.() -> Unit)? = null) {
 
