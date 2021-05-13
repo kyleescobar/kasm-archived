@@ -1,3 +1,10 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+}
+
 buildscript {
     repositories { gradlePluginPortal() }
     dependencies.classpath("de.fayard.refreshVersions:refreshVersions:0.9.7")
@@ -8,4 +15,4 @@ de.fayard.refreshVersions.RefreshVersionsSetup.bootstrap(settings)
 rootProject.name = 'kasm'
 
 include ':commons'
-
+include ':kasm'
