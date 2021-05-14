@@ -18,11 +18,14 @@
 package org.spectralpowered.kasm
 
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
 import org.spectralpowered.kasm.commons.propertymixin.mixin
+import org.spectralpowered.kasm.commons.propertymixin.nullableMixin
+import java.util.ArrayDeque
 
 var ClassNode.pool: ClassPool by mixin()
     internal set
@@ -30,6 +33,15 @@ var ClassNode.pool: ClassPool by mixin()
 val ClassNode.type: Type get() = Type.getObjectType(this.name)
 
 val ClassNode.identifier: String get() = this.name
+
+var ClassNode.parent: ClassNode? by nullableMixin()
+val ClassNode.children: MutableList<ClassNode> by mixin()
+val ClassNode.interfaceClasses: MutableList<ClassNode> by mixin()
+val ClassNode.implementers: MutableList<ClassNode> by mixin()
+val ClassNode.methodTypeRefs: MutableList<MethodNode> by mixin()
+val ClassNode.fieldTypeRefs: MutableList<FieldNode> by mixin()
+val ClassNode.strings: MutableList<String> by mixin()
+
 
 internal fun ClassNode.init(pool: ClassPool) {
     this.pool = pool
@@ -50,4 +62,115 @@ fun ClassNode.toByteCode(): ByteArray {
     this.accept(writer)
 
     return writer.toByteArray()
+}
+
+/**
+ * Resolves a method from a class respecting the JVM method resolution specifications.
+ *
+ * @receiver ClassNode
+ * @param name String
+ * @param desc String
+ * @param toInterface Boolean
+ * @return MethodNode?
+ */
+fun ClassNode.resolveMethod(name: String, desc: String, toInterface: Boolean): MethodNode? {
+    if (!toInterface) {
+        var ret = findMethod(name, desc)
+        if (ret != null) return ret
+
+        var cls = this.parent
+        while (cls != null) {
+            ret = cls.findMethod(name, desc)
+            if (ret != null) return ret
+
+            cls = cls.parent
+        }
+        return resolveInterfaceMethod(name, desc)
+    } else {
+        var ret = findMethod(name, desc)
+        if (ret != null) return ret
+
+        if (parent != null) {
+            ret = parent!!.findMethod(name, desc)
+            if (ret != null && (ret.access and (ACC_PUBLIC or ACC_STATIC)) == ACC_PUBLIC) return ret
+        }
+        return resolveInterfaceMethod(name, desc)
+    }
+}
+
+private fun ClassNode.resolveInterfaceMethod(name: String, desc: String): MethodNode? {
+    val queue = ArrayDeque<ClassNode>()
+    val queued = mutableSetOf<ClassNode>()
+    var cls = this.parent
+
+    while(cls != null) {
+        cls.interfaceClasses.forEach { interf ->
+            if(queued.add(interf)) queue.add(interf)
+        }
+        cls = cls.parent
+    }
+
+    if(queue.isEmpty()) return null
+
+    val matches = mutableSetOf<MethodNode>()
+    var foundNonAbstract = false
+
+    cls = queue.poll()
+    while(cls != null) {
+        var ret = cls.findMethod(name, desc)
+        if(ret != null && (ret.access and (ACC_PRIVATE or ACC_STATIC)) == 0) {
+            matches.add(ret)
+            if((ret.access and ACC_ABSTRACT) == 0) {
+                foundNonAbstract = true
+            }
+        }
+
+        cls.interfaceClasses.forEach { interf ->
+            if(queued.add(interf)) queue.add(interf)
+        }
+    }
+
+    if(matches.isEmpty()) return null
+    if(matches.size == 1) return matches.iterator().next()
+
+    if(foundNonAbstract) {
+        val it = matches.iterator()
+        while(it.hasNext()) {
+            val m = it.next()
+            if((m.access and ACC_ABSTRACT) != 0) {
+                it.remove()
+            }
+        }
+
+        if(matches.size == 1) return matches.iterator().next()
+    }
+
+    val it = matches.iterator()
+    while(it.hasNext()) {
+        val m = it.next()
+
+        cmpLoop@ for(m2 in matches) {
+            if(m2 == m) continue
+
+            if(m2.owner.interfaceClasses.contains(m.owner)) {
+                it.remove()
+                break
+            }
+
+            queue.addAll(m2.owner.interfaceClasses)
+
+            cls = queue.poll()
+            while(cls != null) {
+                if(cls.interfaceClasses.contains(m.owner)) {
+                    it.remove()
+                    queue.clear()
+                    break@cmpLoop
+                }
+
+                queue.addAll(cls.interfaceClasses)
+            }
+        }
+    }
+
+    return matches.iterator().next()
 }

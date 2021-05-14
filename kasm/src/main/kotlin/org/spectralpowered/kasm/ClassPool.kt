@@ -24,6 +24,7 @@ import java.net.URLClassLoader
 class ClassPool {
 
     private val classMap = mutableMapOf<String, ClassNode>()
+    private var hasCalculatedRefs = false
 
     val size: Int get() = classMap.size
 
@@ -41,6 +42,17 @@ class ClassPool {
     }
 
     fun findClass(name: String): ClassNode? = classMap[name]
+
+    /**
+     * Extracts extra reference information after loading all classes in the pool.
+     */
+    fun calculateRefs() {
+        if(hasCalculatedRefs) {
+            return
+        }
+
+
+    }
 
     fun reinitialize() {
         val copy = mutableListOf<ClassNode>()
