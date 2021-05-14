@@ -20,16 +20,24 @@ package org.spectralpowered.kasm
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.FieldNode
+import org.objectweb.asm.tree.MethodNode
 import org.spectralpowered.kasm.commons.propertymixin.mixin
+import java.lang.reflect.Modifier
 
 var FieldNode.owner: ClassNode by mixin()
     internal set
 
 val FieldNode.pool: ClassPool get() = this.owner.pool
-
 val FieldNode.type: Type get() = Type.getType(this.desc)
-
 val FieldNode.identifier: String get() = "${this.owner}.${this.name}"
+
+val FieldNode.isPublic: Boolean get() = Modifier.isPublic(this.access)
+val FieldNode.isPrivate: Boolean get() = Modifier.isPrivate(this.access)
+val FieldNode.isFinal: Boolean get() = Modifier.isFinal(this.access)
+val FieldNode.isStatic: Boolean get() = Modifier.isStatic(this.access)
+
+val FieldNode.readRefs: MutableList<MethodNode> by mixin()
+val FieldNode.writeRefs: MutableList<MethodNode> by mixin()
 
 internal fun FieldNode.init(owner: ClassNode) {
     this.owner = owner

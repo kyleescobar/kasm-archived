@@ -25,14 +25,18 @@ import org.objectweb.asm.tree.FieldNode
 import org.objectweb.asm.tree.MethodNode
 import org.spectralpowered.kasm.commons.propertymixin.mixin
 import org.spectralpowered.kasm.commons.propertymixin.nullableMixin
+import java.lang.reflect.Modifier
 import java.util.ArrayDeque
 
 var ClassNode.pool: ClassPool by mixin()
     internal set
 
 val ClassNode.type: Type get() = Type.getObjectType(this.name)
-
 val ClassNode.identifier: String get() = this.name
+
+val ClassNode.isStatic: Boolean get() = Modifier.isStatic(this.access)
+val ClassNode.isAbstract: Boolean get() = Modifier.isAbstract(this.access)
+val ClassNode.isInterface: Boolean get() = Modifier.isInterface(this.access)
 
 var ClassNode.parent: ClassNode? by nullableMixin()
 val ClassNode.children: MutableList<ClassNode> by mixin()
@@ -62,6 +66,44 @@ fun ClassNode.toByteCode(): ByteArray {
     this.accept(writer)
 
     return writer.toByteArray()
+}
+
+/**
+ * Resolves a field from the class and respects inheritance order defines by the JVM specifications
+ *
+ * @receiver ClassNode
+ * @param name String
+ * @param desc String
+ * @return FieldNode?
+ */
+fun ClassNode.resolveField(name: String, desc: String): FieldNode? {
+    var ret = findField(name, desc)
+    if(ret != null) return ret
+
+    if(interfaceClasses.isNotEmpty()) {
+        val queue = ArrayDeque<ClassNode>()
+        queue.addAll(interfaceClasses)
+
+        var cls = queue.pollFirst()
+        while(cls != null) {
+            ret = cls.findField(name, desc)
+            if(ret != null) return ret
+
+            cls.interfaceClasses.forEach {
+                queue.addFirst(it)
+            }
+        }
+    }
+
+    var cls = parent
+    while(cls != null) {
+        ret = cls.findField(name, desc)
+        if(ret != null) return ret
+
+        cls = cls.parent
+    }
+
+    return null
 }
 
 /**
