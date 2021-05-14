@@ -17,8 +17,9 @@
 
 package org.spectralpowered.kasm
 
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.Opcodes.GETFIELD
+import org.objectweb.asm.Opcodes.GETSTATIC
+import org.objectweb.asm.tree.*
 
 internal object FeatureProcessor {
 
@@ -60,6 +61,52 @@ internal object FeatureProcessor {
     }
 
     private fun processMethodInsns(method: MethodNode) {
+        val it = method.instructions.iterator()
+        while(it.hasNext()) {
+            /*
+             * Handle specific instruction types
+             */
+            when(val insn = it.next()) {
+                /*
+                 * Method Invocation Type
+                 */
+                is MethodInsnNode -> {
+                    val owner = method.pool.findClass(insn.owner) ?: continue
+                    val dst = owner.resolveMethod(insn.name, insn.desc, insn.itf) ?: continue
+                    dst.refsIn.add(method)
+                    method.refsOut.add(dst)
+                    dst.owner.methodTypeRefs.add(method)
+                    method.classRefs.add(dst.owner)
+                }
 
+                /*
+                 * Field Read / Write
+                 */
+                is FieldInsnNode -> {
+                    val owner = method.pool.findClass(insn.owner) ?: continue
+                    val dst = owner.resolveField(insn.name, insn.desc) ?: continue
+
+                    if(insn.opcode == GETSTATIC || insn.opcode == GETFIELD) {
+                        dst.readRefs.add(method)
+                        method.fieldReadRefs.add(dst)
+                    } else {
+                        dst.writeRefs.add(method)
+                        method.fieldWriteRefs.add(dst)
+                    }
+
+                    dst.owner.methodTypeRefs.add(method)
+                    method.classRefs.add(dst.owner)
+                }
+
+                /*
+                 * Type reference
+                 */
+                is TypeInsnNode -> {
+                    val dst = method.pool.findClass(insn.desc) ?: continue
+                    dst.methodTypeRefs.add(method)
+                    method.classRefs.add(dst)
+                }
+            }
+        }
     }
 }

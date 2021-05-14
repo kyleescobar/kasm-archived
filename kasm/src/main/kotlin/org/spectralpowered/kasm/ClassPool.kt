@@ -47,11 +47,8 @@ class ClassPool {
      * Extracts extra reference information after loading all classes in the pool.
      */
     fun calculateRefs() {
-        if(hasCalculatedRefs) {
-            return
-        }
-
-
+        hasCalculatedRefs = true
+        FeatureProcessor.processRefs(this)
     }
 
     fun reinitialize() {
@@ -61,6 +58,10 @@ class ClassPool {
         classMap.clear()
         copy.forEach { node ->
             this.addClass(node)
+        }
+
+        if(hasCalculatedRefs) {
+            this.calculateRefs()
         }
     }
 

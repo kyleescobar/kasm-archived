@@ -39,11 +39,11 @@ val MethodNode.isFinal: Boolean get() = Modifier.isFinal(this.access)
 val MethodNode.isAbstract: Boolean get() = Modifier.isAbstract(this.access)
 val MethodNode.isStatic: Boolean get() = Modifier.isStatic(this.access)
 
-val refsIn: MutableList<MethodNode> by mixin()
-val refsOut: MutableList<MethodNode> by mixin()
-val fieldReadRefs: MutableList<FieldNode> by mixin()
-val fieldWriteRefs: MutableList<FieldNode> by mixin()
-val classRefs: MutableList<ClassNode> by mixin()
+val MethodNode.refsIn: MutableList<MethodNode> by mixin()
+val MethodNode.refsOut: MutableList<MethodNode> by mixin()
+val MethodNode.fieldReadRefs: MutableList<FieldNode> by mixin()
+val MethodNode.fieldWriteRefs: MutableList<FieldNode> by mixin()
+val MethodNode.classRefs: MutableList<ClassNode> by mixin()
 
 internal fun MethodNode.init(owner: ClassNode) {
     this.owner = owner
