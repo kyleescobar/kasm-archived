@@ -7,3 +7,5 @@ rootProject.name = 'kasm'
 include ':commons'
 include ':kasm'
 include ':executor'
+
+project(':kasm').name = 'kasm-base'

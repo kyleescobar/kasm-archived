@@ -1,5 +1,12 @@
+//file:noinspection GroovyAssignabilityCheck
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' apply false
+    id 'net.researchgate.release' apply false
+}
+
+wrapper {
+    gradleVersion = '7.0'
 }
 
 allprojects {
@@ -20,5 +27,20 @@ allprojects {
         api "org.ow2.asm:asm-commons:_"
         api "org.ow2.asm:asm-util:_"
         api "org.ow2.asm:asm-tree:_"
+    }
+}
+
+subprojects {
+    apply plugin: 'net.researchgate.release'
+
+    release {
+        preTagCommitMessage = '[Release] - pre tag commit: '
+        tagCommitMessage = '[Release] - creating tag: '
+        newVersionCommitMessage = '[Release] - new version: '
+
+        git {
+            requireBranch = 'release'
+            signTag = true
+        }
     }
 }

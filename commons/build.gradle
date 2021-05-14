@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+//file:noinspection GroovyAssignabilityCheck
+
 plugins {
     id 'maven-publish'
 }
@@ -28,7 +30,7 @@ publishing {
     repositories {
         mavenLocal()
         maven {
-            url 'https://maven.spectralpowered.org'
+            url "https://maven.spectralpowered.org"
             credentials {
                 username System.getenv("MAVEN_USERNAME")
                 password System.getenv("MAVEN_PASSWORD")
