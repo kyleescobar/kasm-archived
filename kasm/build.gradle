@@ -15,10 +15,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+plugins {
+    id 'maven-publish'
+}
+
 dependencies {
     api project(":commons")
-    api "org.ow2.asm:asm:_"
-    api "org.ow2.asm:asm-commons:_"
-    api "org.ow2.asm:asm-util:_"
-    api "org.ow2.asm:asm-tree:_"
+}
+
+publishing {
+    repositories {
+        mavenLocal()
+        maven {
+            url 'https://maven.spectralpowered.org'
+            credentials {
+                username System.getenv("MAVEN_USERNAME")
+                password System.getenv("MAVEN_PASSWORD")
+            }
+        }
+    }
+
+    publications {
+        maven(MavenPublication) {
+            groupId = 'org.spectralpowered.kasm'
+            artifactId = 'kasm'
+            version = project.version
+
+            from components.java
+        }
+    }
 }

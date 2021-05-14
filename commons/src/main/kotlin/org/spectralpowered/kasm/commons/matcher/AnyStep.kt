@@ -15,34 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-plugins {
-    id 'maven-publish'
-}
+package org.spectralpowered.kasm.commons.matcher
 
-dependencies {
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:_'
-    implementation 'org.jetbrains.kotlin:kotlin-reflect:_'
-}
+import org.objectweb.asm.tree.AbstractInsnNode
 
-publishing {
-    repositories {
-        mavenLocal()
-        maven {
-            url 'https://maven.spectralpowered.org'
-            credentials {
-                username System.getenv("MAVEN_USERNAME")
-                password System.getenv("MAVEN_PASSWORD")
-            }
-        }
+class AnyStep : IterableStep<AbstractInsnNode>() {
+
+    override fun tryMatch(insn: AbstractInsnNode): Boolean {
+        return true
     }
 
-    publications {
-        maven(MavenPublication) {
-            groupId = 'org.spectralpowered.kasm'
-            artifactId = 'commons'
-            version = project.version
-
-            from components.java
-        }
+    override fun toString(): String {
+        return "AnyStep[captured=$captured]"
     }
 }
