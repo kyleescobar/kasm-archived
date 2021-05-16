@@ -36,8 +36,8 @@ val FieldNode.isPrivate: Boolean get() = Modifier.isPrivate(this.access)
 val FieldNode.isFinal: Boolean get() = Modifier.isFinal(this.access)
 val FieldNode.isStatic: Boolean get() = Modifier.isStatic(this.access)
 
-val FieldNode.readRefs: MutableList<MethodNode> by mixin()
-val FieldNode.writeRefs: MutableList<MethodNode> by mixin()
+val FieldNode.readRefs: MutableList<MethodNode> by mixin(mutableListOf())
+val FieldNode.writeRefs: MutableList<MethodNode> by mixin(mutableListOf())
 
 internal fun FieldNode.init(owner: ClassNode) {
     this.owner = owner
