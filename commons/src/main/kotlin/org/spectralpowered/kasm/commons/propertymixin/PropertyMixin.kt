@@ -36,8 +36,8 @@ private fun <K, V, T : WeakReference<K>> MutableMap<T, V>.findWeakReferenceForKe
  * @param block [@kotlin.ExtensionFunctionType] Function1<PropertyMixin<T>, Unit>
  * @return PropertyMixin<T>
  */
-fun <T, V> mixin(): PropertyMixin<T, V> {
-    return PropertyMixin()
+fun <T, V> mixin(init: T? = null): PropertyMixin<T, V> {
+    return PropertyMixin(init)
 }
 
 fun <T, V> nullableMixin(): SingleNullPropertyMixin<T, V> {
@@ -60,7 +60,7 @@ fun <T, V> nullableMixin(): SingleNullPropertyMixin<T, V> {
  *
  * @param T
  */
-class PropertyMixin<T, V> : ReadWriteProperty<V, T> {
+class PropertyMixin<T, V>(private val init: T?) : ReadWriteProperty<V, T> {
 
     private val map = mutableMapOf<WeakKeyedReference<Any, T>, T>()
 
@@ -73,7 +73,8 @@ class PropertyMixin<T, V> : ReadWriteProperty<V, T> {
      */
     override fun getValue(thisRef: V, property: KProperty<*>): T = thisRef?.let {
         map[map.findWeakReferenceForKey(thisRef)]
-    } ?: throw UninitializedPropertyAccessException("Unable to get the value of the mixin property as it has not been initialized.")
+    } ?: (init
+        ?: throw UninitializedPropertyAccessException("Unable to get the value of the mixin property as it has not been initialized."))
 
     /**
      * Sets and/or stores a value in the reference map  for a mixin property.

@@ -39,12 +39,12 @@ val ClassNode.isAbstract: Boolean get() = Modifier.isAbstract(this.access)
 val ClassNode.isInterface: Boolean get() = Modifier.isInterface(this.access)
 
 var ClassNode.parent: ClassNode? by nullableMixin()
-val ClassNode.children: MutableList<ClassNode> by mixin()
-val ClassNode.interfaceClasses: MutableList<ClassNode> by mixin()
-val ClassNode.implementers: MutableList<ClassNode> by mixin()
-val ClassNode.methodTypeRefs: MutableList<MethodNode> by mixin()
-val ClassNode.fieldTypeRefs: MutableList<FieldNode> by mixin()
-val ClassNode.strings: MutableList<String> by mixin()
+val ClassNode.children: MutableList<ClassNode> by mixin(mutableListOf())
+val ClassNode.interfaceClasses: MutableList<ClassNode> by mixin(mutableListOf())
+val ClassNode.implementers: MutableList<ClassNode> by mixin(mutableListOf())
+val ClassNode.methodTypeRefs: MutableList<MethodNode> by mixin(mutableListOf())
+val ClassNode.fieldTypeRefs: MutableList<FieldNode> by mixin(mutableListOf())
+val ClassNode.strings: MutableList<String> by mixin(mutableListOf())
 
 
 internal fun ClassNode.init(pool: ClassPool) {
