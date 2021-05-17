@@ -92,6 +92,8 @@ fun ClassNode.resolveField(name: String, desc: String): FieldNode? {
             cls.interfaceClasses.forEach {
                 queue.addFirst(it)
             }
+
+            cls = queue.pollFirst()
         }
     }
 
